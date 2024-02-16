@@ -10,6 +10,8 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 abstract class ClassVoter extends AttributeVoter
 {
 
+	public const NullBc = 'default';
+
 	/** @var array<string, true> */
 	private array $classAttributeIndex;
 
