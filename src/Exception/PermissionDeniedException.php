@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Webchemistry\Security\Exception;
+namespace WebChemistry\Security\Exception;
 
 use Nette\Application\BadRequestException;
 use Throwable;

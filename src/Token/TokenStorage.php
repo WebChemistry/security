@@ -1,12 +1,12 @@
 <?php declare(strict_types = 1);
 
-namespace Webchemistry\Security\Token;
+namespace WebChemistry\Security\Token;
 
 use LogicException;
 use Nette\Security\User;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Webchemistry\Security\Identity\UserIdentity;
+use WebChemistry\Security\Identity\UserIdentity;
 
 final class TokenStorage implements TokenStorageInterface
 {

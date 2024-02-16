@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Webchemistry\Security\Attribute;
+namespace WebChemistry\Security\Attribute;
 
 use Attribute;
 

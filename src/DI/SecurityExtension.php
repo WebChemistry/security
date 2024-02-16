@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Webchemistry\Security\DI;
+namespace WebChemistry\Security\DI;
 
 use Nette\Bridges\ApplicationLatte\LatteFactory;
 use Nette\DI\CompilerExtension;
@@ -15,9 +15,9 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\RoleHierarchyVoter;
 use Symfony\Component\Security\Core\Authorization\Voter\RoleVoter;
 use Symfony\Component\Security\Core\Role\RoleHierarchy;
-use Webchemistry\Security\AccessDecisionManager;
-use Webchemistry\Security\Latte\LatteFunctions;
-use Webchemistry\Security\Token\TokenStorage;
+use WebChemistry\Security\AccessDecisionManager;
+use WebChemistry\Security\Latte\LatteFunctions;
+use WebChemistry\Security\Token\TokenStorage;
 
 final class SecurityExtension extends CompilerExtension
 {

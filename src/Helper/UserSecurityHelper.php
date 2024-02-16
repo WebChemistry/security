@@ -1,12 +1,12 @@
 <?php declare(strict_types = 1);
 
-namespace Webchemistry\Security\Helper;
+namespace WebChemistry\Security\Helper;
 
 use Nette\Security\User;
 use Symfony\Component\Security\Core\Authentication\Token\NullToken;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Webchemistry\Security\Identity\UserIdentity;
-use Webchemistry\Security\Token\AuthenticatedToken;
+use WebChemistry\Security\Identity\UserIdentity;
+use WebChemistry\Security\Token\AuthenticatedToken;
 
 final class UserSecurityHelper
 {

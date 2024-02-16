@@ -1,12 +1,12 @@
 <?php declare(strict_types = 1);
 
-namespace Webchemistry\Security\Attribute;
+namespace WebChemistry\Security\Attribute;
 
 use ReflectionClass;
 use ReflectionMethod;
 use Symfony\Component\Security\Core\Authorization\AccessDecisionManagerInterface;
-use Webchemistry\Security\Exception\PermissionDeniedException;
-use Webchemistry\Security\Helper\UserSecurityHelper;
+use WebChemistry\Security\Exception\PermissionDeniedException;
+use WebChemistry\Security\Helper\UserSecurityHelper;
 
 trait IsGrantedStandaloneTrait
 {

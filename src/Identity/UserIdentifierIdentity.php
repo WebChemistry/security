@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Webchemistry\Security\Identity;
+namespace WebChemistry\Security\Identity;
 
 use Nette\Security\IIdentity;
 

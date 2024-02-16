@@ -1,14 +1,14 @@
 <?php declare(strict_types = 1);
 
-namespace Webchemistry\Security\Latte;
+namespace WebChemistry\Security\Latte;
 
 use Nette\Security\IIdentity;
 use Nette\Security\User;
 use Symfony\Component\Security\Core\Authentication\Token\NullToken;
 use Symfony\Component\Security\Core\Authorization\AccessDecisionManagerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Webchemistry\Security\Identity\UserIdentity;
-use Webchemistry\Security\Token\AuthenticatedToken;
+use WebChemistry\Security\Identity\UserIdentity;
+use WebChemistry\Security\Token\AuthenticatedToken;
 
 final class LatteFunctions
 {

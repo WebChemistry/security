@@ -1,10 +1,10 @@
 <?php declare(strict_types = 1);
 
-namespace Webchemistry\Security\Voter;
+namespace WebChemistry\Security\Voter;
 
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\CacheableVoterInterface;
-use Webchemistry\Security\Cache\VoterCache;
+use WebChemistry\Security\Cache\VoterCache;
 
 /**
  * @internal

@@ -1,14 +1,14 @@
 <?php declare(strict_types = 1);
 
-namespace Webchemistry\Security;
+namespace WebChemistry\Security;
 
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AccessDecisionManager as SymfonyAccessDecisionManager;
 use Symfony\Component\Security\Core\Authorization\AccessDecisionManagerInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
-use Webchemistry\Security\Voter\AccessDecisionManagerAware;
-use Webchemistry\Security\Voter\PersistentVoter;
-use Webchemistry\Security\Voter\PersistentVoterImpl;
+use WebChemistry\Security\Voter\AccessDecisionManagerAware;
+use WebChemistry\Security\Voter\PersistentVoter;
+use WebChemistry\Security\Voter\PersistentVoterImpl;
 
 final class AccessDecisionManager implements AccessDecisionManagerInterface
 {
