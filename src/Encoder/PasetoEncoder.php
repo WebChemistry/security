@@ -3,6 +3,7 @@
 namespace WebChemistry\Security\Encoder;
 
 use DateTimeImmutable;
+use InvalidArgumentException;
 use ParagonIE\Paseto\Builder;
 use ParagonIE\Paseto\Exception\PasetoException;
 use ParagonIE\Paseto\Keys\SymmetricKey;
@@ -32,7 +33,13 @@ final class PasetoEncoder implements AuthenticationEncoder
 		private string $idKey = 'id',
 	)
 	{
-		$this->sharedKey = new SymmetricKey(base64_decode($base64SharedKey));
+		$sharedKey = base64_decode($base64SharedKey, true);
+
+		if ($sharedKey === false) {
+			throw new InvalidArgumentException('Invalid base64 input.');
+		}
+
+		$this->sharedKey = new SymmetricKey($sharedKey);
 		$this->protocol = $protocol ?? new Version2();
 	}
 

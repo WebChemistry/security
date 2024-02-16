@@ -3,6 +3,7 @@
 namespace WebChemistry\Security\Encoder;
 
 use DateTimeImmutable;
+use InvalidArgumentException;
 use Lcobucci\Clock\FrozenClock;
 use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer\Eddsa;
@@ -19,9 +20,6 @@ final class JwtEncoder implements AuthenticationEncoder
 	private Configuration $configuration;
 
 	/**
-	 * @param non-empty-string $publicKey
-	 * @param non-empty-string $privateKey
-	 * @param non-empty-string $issuer
 	 */
 	public function __construct(
 		#[SensitiveParameter]
@@ -35,9 +33,20 @@ final class JwtEncoder implements AuthenticationEncoder
 	{
 		$this->configuration = Configuration::forAsymmetricSigner(
 			new Eddsa(),
-			InMemory::plainText($base64 ? base64_decode($privateKey) : $privateKey), // @phpstan-ignore-line
-			InMemory::plainText($base64 ? base64_decode($publicKey) : $publicKey), // @phpstan-ignore-line
+			InMemory::plainText($base64 ? $this->decodeBase64($privateKey) : $privateKey), // @phpstan-ignore-line
+			InMemory::plainText($base64 ? $this->decodeBase64($publicKey) : $publicKey), // @phpstan-ignore-line
 		);
+	}
+
+	private function decodeBase64(string $input): string
+	{
+		$decoded = base64_decode($input, true);
+
+		if ($decoded === false) {
+			throw new InvalidArgumentException('Invalid base64 input.');
+		}
+
+		return $decoded;
 	}
 
 	/**
