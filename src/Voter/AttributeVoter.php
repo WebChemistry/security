@@ -8,6 +8,8 @@ use Symfony\Component\Security\Core\Authorization\Voter\CacheableVoterInterface;
 abstract class AttributeVoter implements CacheableVoterInterface
 {
 
+	public const NullBc = 'default';
+
 	/** @var array<string, true> */
 	private array $attributeIndex;
 
