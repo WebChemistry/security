@@ -49,9 +49,6 @@ final class JwtEncoder implements AuthenticationEncoder
 		return $decoded;
 	}
 
-	/**
-	 * @param non-empty-string $value
-	 */
 	public function decode(string $value): ?Decoded
 	{
 		try {
