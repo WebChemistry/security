@@ -1,0 +1,18 @@
+{
+    "name": "webchemistry/security",
+    "require": {
+        "php": ">= 8.1",
+        "symfony/security-core": "^6.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "WebChemistry\\Security\\": "src"
+        }
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^1.10",
+        "nette/di": "^3.1",
+        "nette/application": "^3.1",
+        "nette/security": "^3.2"
+    }
+}
