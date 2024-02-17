@@ -7,8 +7,7 @@ use Symfony\Component\Security\Core\Authorization\AccessDecisionManager as Symfo
 use Symfony\Component\Security\Core\Authorization\AccessDecisionManagerInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
 use WebChemistry\Security\Voter\AccessDecisionManagerAware;
-use WebChemistry\Security\Voter\PersistentVoter;
-use WebChemistry\Security\Voter\PersistentVoterImpl;
+use WebChemistry\Security\Voter\DebugVoter;
 
 final class AccessDecisionManager implements AccessDecisionManagerInterface
 {
@@ -18,16 +17,16 @@ final class AccessDecisionManager implements AccessDecisionManagerInterface
 	/**
 	 * @param VoterInterface[] $voters
 	 */
-	public function __construct(array $voters)
+	public function __construct(array $voters, bool $strict = false)
 	{
-		foreach ($voters as $index => $voter) {
+		foreach ($voters as $voter) {
 			if ($voter instanceof AccessDecisionManagerAware) {
 				$voter->setAccessDecisionManager($this);
 			}
+		}
 
-			if ($voter instanceof PersistentVoter) {
-				$voters[$index] = new PersistentVoterImpl($voter);
-			}
+		if ($strict) {
+			$voters[] = new DebugVoter();
 		}
 
 		$this->decorated = new SymfonyAccessDecisionManager($voters);

@@ -25,6 +25,7 @@ final class SecurityExtension extends CompilerExtension
 	public function getConfigSchema(): Schema
 	{
 		return Expect::structure([
+			'strict' => Expect::bool(false),
 			'roleHierarchy' => Expect::arrayOf(Expect::arrayOf(Expect::string()), Expect::string()),
 			'role' => Expect::structure([
 				'prefix' => Expect::string('ROLE_'),
@@ -40,7 +41,7 @@ final class SecurityExtension extends CompilerExtension
 
 		$builder->addDefinition($this->prefix('accessDecisionManager'))
 			->setType(AccessDecisionManagerInterface::class)
-			->setFactory(AccessDecisionManager::class);
+			->setFactory(AccessDecisionManager::class, ['strict' => $config->strict]);
 
 		$builder->addDefinition($this->prefix('tokenStorage'))
 			->setType(TokenStorageInterface::class)
