@@ -8,7 +8,7 @@ use ParagonIE\Paseto\Builder;
 use ParagonIE\Paseto\Exception\PasetoException;
 use ParagonIE\Paseto\Keys\SymmetricKey;
 use ParagonIE\Paseto\Parser;
-use ParagonIE\Paseto\Protocol\Version2;
+use ParagonIE\Paseto\Protocol\Version4;
 use ParagonIE\Paseto\ProtocolCollection;
 use ParagonIE\Paseto\ProtocolInterface;
 use ParagonIE\Paseto\Purpose;
@@ -40,7 +40,7 @@ final class PasetoEncoder implements AuthenticationEncoder
 		}
 
 		$this->sharedKey = new SymmetricKey($sharedKey);
-		$this->protocol = $protocol ?? new Version2();
+		$this->protocol = $protocol ?? new Version4();
 	}
 
 	public function encode(string $id, string $expiration): string
