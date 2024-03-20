@@ -2,11 +2,11 @@
 
 namespace WebChemistry\Security\Encoder;
 
-final class Decoded
+final class DecodedValue
 {
 
 	public function __construct(
-		public readonly string $value,
+		public readonly mixed $value,
 		public readonly bool $needsRefresh = false,
 	)
 	{

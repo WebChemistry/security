@@ -2,8 +2,6 @@
 
 namespace WebChemistry\Security\Encoder;
 
-use DateTimeImmutable;
-use InvalidArgumentException;
 use ParagonIE\Paseto\Builder;
 use ParagonIE\Paseto\Exception\PasetoException;
 use ParagonIE\Paseto\Keys\SymmetricKey;
@@ -15,71 +13,78 @@ use ParagonIE\Paseto\Purpose;
 use ParagonIE\Paseto\Rules\IssuedBy;
 use ParagonIE\Paseto\Rules\ValidAt;
 use SensitiveParameter;
+use WebChemistry\Security\Key\SecretKey;
+use WebChemistry\Security\Key\SecretKeyAssocMap;
 
-final class PasetoEncoder implements AuthenticationEncoder
+final class PasetoEncoder implements CookieEncoder
 {
-
-	private SymmetricKey $sharedKey;
 
 	private ProtocolInterface $protocol;
 
-	private Parser $parser;
+	/** @var SecretKeyAssocMap<Parser> */
+	private SecretKeyAssocMap $parsers;
 
 	public function __construct(
 		#[SensitiveParameter]
-		 string $base64SharedKey,
+		private SecretKey $sharedKey,
 		private string $issuer,
 		?ProtocolInterface $protocol = null,
-		private string $idKey = 'id',
 	)
 	{
-		$sharedKey = base64_decode($base64SharedKey, true);
-
-		if ($sharedKey === false) {
-			throw new InvalidArgumentException('Invalid base64 input.');
-		}
-
-		$this->sharedKey = new SymmetricKey($sharedKey);
 		$this->protocol = $protocol ?? new Version4();
+		$this->parsers = new SecretKeyAssocMap();
 	}
 
-	public function encode(string $id, string $expiration): string
+	public function encode(ValueToEncode $value, array $context = []): string
 	{
+		$sharedKey = new SymmetricKey($this->sharedKey->getKey($context));
+
 		$builder = (new Builder())
-			->setKey($this->sharedKey)
+			->setKey($sharedKey)
 			->setVersion($this->protocol)
 			->setPurpose(Purpose::local())
 			->setIssuer($this->issuer)
 			->setIssuedAt()
 			->setNotBefore()
-			->setExpiration(new DateTimeImmutable(sprintf('+ %s', $expiration)))
-			->set($this->idKey, $id);
+			->setExpiration($value->getExpiration())
+			->set(self::ValueClaim, $value->value);
 
 		return $builder->toString();
 	}
 
-	public function decode(string $value): ?Decoded
+	public function decode(string $value, array $context = []): ?DecodedValue
 	{
-		try {
-			$token = $this->getParser()->parse($value);
-		} catch (PasetoException) {
-			return null;
-		}
+		$claims = $this->decodeToClaims($value, $context);
 
-		$id = $token->get($this->idKey);
-
-		if (!is_string($id) || $id === '') {
-			return null;
-		}
-
-		return new Decoded($id);
+		return isset($claims[self::ValueClaim]) ? new DecodedValue($claims[self::ValueClaim]) : null;
 	}
 
-	private function getParser(): Parser
+	public function decodeToClaims(string $value, array $context = []): array
 	{
-		return $this->parser ??= Parser::getLocal($this->sharedKey, new ProtocolCollection($this->protocol))
+		try {
+			$token = $this->getParser($this->sharedKey->getKey($context))->parse($value);
+		} catch (PasetoException) {
+			return [];
+		}
+
+		return $token->getClaims();
+	}
+
+	private function getParser(string $key): Parser
+	{
+		$parser = $this->parsers->get($key);
+
+		if ($parser) {
+			return $parser;
+		}
+
+		$parser = Parser::getLocal(new SymmetricKey($key), new ProtocolCollection($this->protocol))
 			->addRule(new ValidAt())
 			->addRule(new IssuedBy($this->issuer));
+
+		$this->parsers->set($key, $parser);
+
+		return $parser;
 	}
 
 }

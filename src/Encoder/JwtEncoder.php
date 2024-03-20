@@ -13,82 +13,95 @@ use Lcobucci\JWT\Validation\Constraint\IssuedBy;
 use Lcobucci\JWT\Validation\Constraint\StrictValidAt;
 use SensitiveParameter;
 use Throwable;
+use WebChemistry\Security\Key\SecretKey;
+use WebChemistry\Security\Key\SecretKeyAssocMap;
 
-final class JwtEncoder implements AuthenticationEncoder
+final class JwtEncoder implements CookieEncoder
 {
 
-	private Configuration $configuration;
+	/** @var SecretKeyAssocMap<Configuration> */
+	private SecretKeyAssocMap $configurationMap;
 
 	/**
 	 */
 	public function __construct(
 		#[SensitiveParameter]
-		string $publicKey,
+		private SecretKey $publicKey,
 		#[SensitiveParameter]
-		string $privateKey,
+		private SecretKey $privateKey,
 		private string $issuer,
-		bool $base64 = false,
-		private string $idKey = 'id',
 	)
 	{
-		$this->configuration = Configuration::forAsymmetricSigner(
-			new Eddsa(),
-			InMemory::plainText($base64 ? $this->decodeBase64($privateKey) : $privateKey), // @phpstan-ignore-line
-			InMemory::plainText($base64 ? $this->decodeBase64($publicKey) : $publicKey), // @phpstan-ignore-line
-		);
+		$this->configurationMap = new SecretKeyAssocMap();
 	}
 
-	private function decodeBase64(string $input): string
+	public function decode(string $value, array $context = []): ?DecodedValue
 	{
-		$decoded = base64_decode($input, true);
+		$claims = $this->decodeToClaims($value, $context);
 
-		if ($decoded === false) {
-			throw new InvalidArgumentException('Invalid base64 input.');
-		}
-
-		return $decoded;
+		return isset($claims[self::ValueClaim]) ? new DecodedValue($claims[self::ValueClaim]) : null;
 	}
 
-	public function decode(string $value): ?Decoded
+	public function decodeToClaims(string $value, array $context = []): array
 	{
+		$configuration = $this->getConfiguration($context);
 		try {
-			$token = $this->configuration->parser()->parse($value);
+			$token = $configuration->parser()->parse($value);
 		} catch (Throwable) {
-			return null;
+			return [];
 		}
 
-		$valid = $this->configuration->validator()->validate(
+		$valid = $configuration->validator()->validate(
 			$token,
 			new IssuedBy($this->issuer),
 			new StrictValidAt(new FrozenClock(new DateTimeImmutable())),
 		);
 
 		if (!$valid) {
-			return null;
+			return [];
 		}
 
 		assert($token instanceof Plain);
 
-		$id = $token->claims()->get($this->idKey);
-
-		if (!is_string($id) || $id === '') {
-			return null;
-		}
-
-		return new Decoded($id);
+		return $token->claims()->all();
 	}
 
-	public function encode(string $id, string $expiration): string
+	public function encode(ValueToEncode $value, array $context = []): string
 	{
-		$token = $this->configuration->builder()
+		$configuration = $this->getConfiguration($context);
+
+		$token = $configuration->builder()
 			->issuedBy($this->issuer)
 			->issuedAt(new DateTimeImmutable())
-			->expiresAt(new DateTimeImmutable(sprintf('+ %s', $expiration)))
+			->expiresAt($value->getExpiration())
 			->canOnlyBeUsedAfter(new DateTimeImmutable())
-			->withClaim($this->idKey, $id)
-			->getToken($this->configuration->signer(), $this->configuration->signingKey());
+			->withClaim(self::ValueClaim, $value->value)
+			->getToken($configuration->signer(), $configuration->signingKey());
 
 		return $token->toString();
+	}
+
+	/**
+	 * @param mixed[] $context
+	 */
+	private function getConfiguration(array $context = []): Configuration
+	{
+		$publicKey = $this->publicKey->getKey($context);
+		$privateKey = $this->privateKey->getKey($context);
+
+		$configuration = $this->configurationMap->get($hash = $publicKey . $privateKey);
+
+		if ($configuration) {
+			return $configuration;
+		}
+
+		$this->configurationMap->set($hash, $configuration = Configuration::forAsymmetricSigner(
+			new Eddsa(),
+			InMemory::plainText($publicKey), // @phpstan-ignore-line
+			InMemory::plainText($privateKey), // @phpstan-ignore-line
+		));
+
+		return $configuration;
 	}
 
 }

@@ -6,7 +6,8 @@ use LogicException;
 use Nette\Http\IRequest;
 use Nette\Http\IResponse;
 use Nette\Security\IIdentity;
-use WebChemistry\Security\Encoder\AuthenticationEncoder;
+use WebChemistry\Security\Encoder\CookieEncoder;
+use WebChemistry\Security\Encoder\ValueToEncode;
 use WebChemistry\Security\Identity\UserIdentifierIdentity;
 
 final class DefaultTokenStorage implements TokenStorage
@@ -16,7 +17,7 @@ final class DefaultTokenStorage implements TokenStorage
 
 	public function __construct(
 		private UserStorageConfiguration $configuration,
-		private AuthenticationEncoder $encoder,
+		private CookieEncoder $encoder,
 		private IResponse $response,
 		private IRequest $request,
 	)
@@ -50,9 +51,9 @@ final class DefaultTokenStorage implements TokenStorage
 			return [false, null, null];
 		}
 
-		$decoded = $this->encoder->decode($value);
+		$decoded = $this->encoder->decode($value, ['source' => 'auth']);
 
-		if ($decoded === null) {
+		if ($decoded === null || !is_string($decoded->value) || $decoded->value === '') {
 			return [false, null, null];
 		}
 
@@ -67,7 +68,13 @@ final class DefaultTokenStorage implements TokenStorage
 
 	public function tryGetId(string $value): ?string
 	{
-		return $this->encoder->decode($value)?->value;
+		$decoded = $this->encoder->decode($value, ['source' => 'auth'])?->value;
+
+		if (!is_string($decoded) || $decoded === '') {
+			return null;
+		}
+
+		return $decoded;
 	}
 
 	public function setExpiration(?string $expire, bool $clearIdentity): void
@@ -78,11 +85,12 @@ final class DefaultTokenStorage implements TokenStorage
 	private function saveId(string $id): void
 	{
 		$expiration = $this->expiration ?? $this->configuration->expiration;
+		$value = new ValueToEncode($id, $expiration);
 
 		$this->response->setCookie(
 			$this->configuration->cookieName,
-			$this->encoder->encode($id, $expiration),
-			sprintf('+ %s', $expiration),
+			$this->encoder->encode($value, ['source' => 'auth']),
+			(int) $value->getExpiration()->format('U'),
 		);
 	}
 
