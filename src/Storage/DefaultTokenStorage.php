@@ -35,7 +35,7 @@ final class DefaultTokenStorage implements TokenStorage
 
 	public function clearAuthentication(bool $clearIdentity): void
 	{
-		$this->response->deleteCookie($this->configuration->cookieName);
+		$this->response->deleteCookie($this->configuration->cookieName, domain: $this->configuration->cookieDomain, secure: $this->configuration->cookieSecure);
 	}
 
 	/**
@@ -91,6 +91,8 @@ final class DefaultTokenStorage implements TokenStorage
 			$this->configuration->cookieName,
 			$this->encoder->encode($value, ['source' => 'auth']),
 			(int) $value->getExpiration()->format('U'),
+			domain: $this->configuration->cookieDomain,
+			secure: $this->configuration->cookieSecure,
 		);
 	}
 
